@@ -1,4 +1,4 @@
-# TaskfileToTasks
+# taskfile-to-tasks
 
 Convert your `Taskfile.yml` to `tasks.json` format for VSCode or Zed, keeping your Taskfile as the single source of truth for task definitions while enabling convenient task execution directly from your editor.
 

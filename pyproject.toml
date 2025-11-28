@@ -3,8 +3,8 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "TaskfileToTasks"
-version = "1.0.0"
+name = "taskfile-to-tasks"
+version = "1.0.1"
 description = "Convert Taskfile.yml to editor task configurations (like Zed and VSCode)."
 readme = "README.md"
 license = {text = "MIT"}
