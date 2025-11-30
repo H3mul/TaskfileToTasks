@@ -16,8 +16,8 @@ This tool bridges the gap between [Task](https://taskfile.dev/) (a task runner s
 Clone the repository and run the CLI directly:
 
 ```bash
-git clone https://github.com/H3mul/TaskfileToTasks.git
-cd TaskfileToTasks
+git clone https://github.com/H3mul/taskfile-to-tasks.git
+cd taskfile-to-tasks
 ```
 
 Convert your Taskfile.yml to Zed tasks.json (default):
@@ -33,7 +33,7 @@ python taskfile_to_tasks.cli --editor vscode
 ## Installation
 
 ```
-pip install git+https://github.com/H3mul/TaskfileToTasks.git
+pip install git+https://github.com/H3mul/taskfile-to-tasks.git
 ```
 
 ## Usage

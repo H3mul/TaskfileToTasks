@@ -16,27 +16,27 @@ def create_parser() -> argparse.ArgumentParser:
         ArgumentParser configured with all CLI options
     """
     parser = argparse.ArgumentParser(
-        prog="TaskfileToTasks",
+        prog="taskfile-to-tasks",
         description="Convert Taskfile.yml to tasks.json for VSCode or Zed",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Convert to Zed (default)
-  TaskfileToTasks.py
+  taskfile-to-tasks
 
   # Use custom locations
-  TaskfileToTasks.py --source /path/to/Taskfile.yml --output /path/to/output
+  taskfile-to-tasks --source /path/to/Taskfile.yml --output /path/to/output
 
   # Skip specific tasks
-  TaskfileToTasks.py --skip-tasks build test lint
+  taskfile-to-tasks --skip-tasks build test lint
 
   # Add extra options
-  TaskfileToTasks.py \\
+  taskfile-to-tasks \\
     --extra-zed-options "use_new_terminal: true" \\
     --extra-zed-options "cwd: /tmp"
 
   # Preview tasks without generating
-  TaskfileToTasks.py --preview
+  taskfile-to-tasks --preview
         """,
     )
 

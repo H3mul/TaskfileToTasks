@@ -1,4 +1,4 @@
-"""TaskfileToTasks - Convert Taskfile.yml to tasks.json for VSCode or Zed."""
+"""taskfile-to-tasks - Convert Taskfile.yml to tasks.json for VSCode or Zed."""
 
 __version__ = "1.0.0"
 __author__ = "H3mul"

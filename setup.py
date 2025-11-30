@@ -1,4 +1,4 @@
-"""Setup script for TaskfileToTasks.
+"""Setup script for taskfile-to-tasks.
 
 This file is provided for compatibility and uses the configuration from pyproject.toml.
 Modern packaging tools will use pyproject.toml directly.

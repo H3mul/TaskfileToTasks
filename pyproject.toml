@@ -45,10 +45,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/H3mul/TaskfileToTasks"
-Repository = "https://github.com/H3mul/TaskfileToTasks.git"
-Documentation = "https://github.com/H3mul/TaskfileToTasks#readme"
-"Bug Tracker" = "https://github.com/H3mul/TaskfileToTasks/issues"
+Homepage = "https://github.com/H3mul/taskfile-to-tasks"
+Repository = "https://github.com/H3mul/taskfile-to-tasks.git"
+Documentation = "https://github.com/H3mul/taskfile-to-tasks#readme"
+"Bug Tracker" = "https://github.com/H3mul/taskfile-to-tasks/issues"
 
 [project.scripts]
 taskfile-to-tasks = "taskfile_to_tasks.cli:main"
