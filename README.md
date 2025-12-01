@@ -32,9 +32,19 @@ python taskfile_to_tasks.cli --editor vscode
 
 ## Installation
 
+### Using pip
+
 ```
 pip install git+https://github.com/H3mul/taskfile-to-tasks.git
 ```
+
+### Using AUR (Arch Linux)
+
+```
+yay -S taskfile-to-tasks-python-git
+```
+
+For more information, visit the [AUR package page](https://aur.archlinux.org/packages/taskfile-to-tasks-python-git).
 
 ## Usage
 
