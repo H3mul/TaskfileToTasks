@@ -204,62 +204,72 @@ class TaskfileToTasks:
         self._log(f"Using default output directory: {path}")
         return path.resolve()
 
-    def _load_taskfile(self) -> Dict[str, Any]:
-        """Load and parse the Taskfile.yml.
+    def _load_taskfile(self) -> List[Dict[str, Any]]:
+        """Load all tasks using 'task --list-all --json'.
+        
+        Runs the task command in the Taskfile's directory to get all tasks
+        including those from included Taskfiles.
         
         Returns:
-            Parsed Taskfile contents as a dictionary
+            List of task dictionaries from task command output
             
         Raises:
-            ValueError: If Taskfile.yml is empty or contains invalid YAML
+            subprocess.CalledProcessError: If task command fails
+            ValueError: If output is not valid JSON
         """
         try:
-            with open(self.source_file, "r", encoding="utf-8") as f:
-                taskfile = yaml.safe_load(f)
-                if not taskfile:
-                    raise ValueError("Taskfile.yml is empty")
-                return taskfile
-        except yaml.YAMLError as e:
-            raise ValueError(f"Invalid YAML in Taskfile.yml: {e}")
+            # Run task command in the Taskfile's directory
+            taskfile_dir = self.source_file.parent
+            result = subprocess.run(
+                ["task", "--list-all", "--json"],
+                cwd=taskfile_dir,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            
+            tasks_data = json.loads(result.stdout)
+            if not isinstance(tasks_data, list):
+                raise ValueError("Expected task output to be a list of tasks")
+            
+            self._log(f"Loaded {len(tasks_data)} task(s) from task command")
+            return tasks_data
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(
+                f"Failed to run 'task --list-all --json': {e.stderr}"
+            )
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON from task command: {e}")
 
-    def _extract_tasks(self, taskfile: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Extract tasks from Taskfile.yml.
+    def _extract_tasks(self, tasks_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Extract tasks from task command output.
         
         Args:
-            taskfile: Parsed Taskfile contents
+            tasks_data: List of task dictionaries from 'task --list-all --json'
             
         Returns:
             List of extracted task dictionaries
             
         Raises:
-            ValueError: If tasks section is not a dictionary
+            ValueError: If tasks_data is not a list
         """
-        tasks = taskfile.get("tasks", {})
-        if not isinstance(tasks, dict):
-            raise ValueError("'tasks' section must be a dictionary")
+        if not isinstance(tasks_data, list):
+            raise ValueError("Expected tasks_data to be a list")
 
         extracted = []
-        for task_id, task_def in tasks.items():
-            if task_id in self.skip_tasks:
-                self._log(f"Skipping task: {task_id}")
+        for task in tasks_data:
+            if not isinstance(task, dict):
                 continue
 
-            if isinstance(task_def, dict):
-                desc = task_def.get("desc", "")
-                cmds = task_def.get("cmds", [])
-            else:
-                # Handle simple string tasks (cmds only)
-                desc = ""
-                cmds = [task_def] if isinstance(task_def, str) else []
-
-            if not cmds:
+            task_id = task.get("name", "")
+            if not task_id or task_id in self.skip_tasks:
+                if task_id in self.skip_tasks:
+                    self._log(f"Skipping task: {task_id}")
                 continue
 
-            # Join multiple commands with && for sequential execution
-            if isinstance(cmds, list):
-                command = " && ".join(str(cmd) for cmd in cmds)
-            else:
-                command = str(cmds)
+            # Extract description and command from task
+            desc = task.get("summary", "")
+            command = task.get("name", task_id)
 
             extracted.append(
                 {
@@ -267,7 +277,6 @@ class TaskfileToTasks:
                     "label": task_id,
                     "description": desc,
                     "command": command,
-                    "raw_cmds": cmds,  # Store for editor-specific processing
                 }
             )
 
@@ -348,24 +357,24 @@ class TaskfileToTasks:
 
         return zed_tasks
 
-    def convert(self) -> Path:
+    def convert(self) -> Optional[Path]:
         """Convert Taskfile.yml to tasks.json and write to disk.
         
         Returns:
-            Path to the generated tasks.json file
+            Path to the generated tasks.json file, or None if no tasks found
             
         Raises:
-            FileNotFoundError: If Taskfile.yml cannot be found
-            ValueError: If Taskfile.yml is invalid
+            RuntimeError: If task command fails
+            ValueError: If task output is invalid
         """
-        print(f"Reading Taskfile from: {self.source_file}")
-        taskfile = self._load_taskfile()
+        print(f"Reading tasks from: {self.source_file}")
+        tasks_data = self._load_taskfile()
 
         print("Extracting tasks...")
-        tasks = self._extract_tasks(taskfile)
+        tasks = self._extract_tasks(tasks_data)
 
         if not tasks:
-            print("Warning: No tasks found in Taskfile.yml")
+            print("Warning: No tasks found")
             return None
 
         print(f"Found {len(tasks)} task(s)")
