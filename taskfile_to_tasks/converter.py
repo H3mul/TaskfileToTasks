@@ -24,13 +24,13 @@ def parse_yaml_option(option_str: str) -> Dict[str, Any]:
     Examples:
         "use_new_terminal: true" -> {"use_new_terminal": True}
         "cwd: /tmp" -> {"cwd": "/tmp"}
-    
+
     Args:
         option_str: A YAML key-value pair as a string
-        
+
     Returns:
         A dictionary with the parsed key-value pair
-        
+
     Raises:
         ValueError: If the option string is not valid YAML or is not a key-value pair
     """
@@ -48,11 +48,11 @@ def merge_options(base: Dict[str, Any], extra: List[Dict[str, Any]]) -> Dict[str
     """Merge extra options into the base options dictionary.
 
     Later options override earlier ones.
-    
+
     Args:
         base: The base options dictionary
         extra: List of dictionaries to merge in order
-        
+
     Returns:
         A merged dictionary with all options
     """
@@ -106,7 +106,7 @@ class TaskfileToTasks:
 
     def _log(self, message: str) -> None:
         """Log a message if verbose mode is enabled.
-        
+
         Args:
             message: The message to log
         """
@@ -115,12 +115,12 @@ class TaskfileToTasks:
 
     def _find_task_command(self) -> str:
         """Find the available task command.
-        
+
         Tries to find either 'task' or 'go-task' in the system PATH.
-        
+
         Returns:
             The command name ('task' or 'go-task')
-            
+
         Raises:
             RuntimeError: If neither command is found
         """
@@ -136,7 +136,7 @@ class TaskfileToTasks:
                 return cmd
             except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
                 continue
-        
+
         raise RuntimeError(
             "Neither 'task' nor 'go-task' command found. "
             "Please install go-task: https://taskfile.dev/installation"
@@ -144,13 +144,13 @@ class TaskfileToTasks:
 
     def _parse_extra_options(self, options: List[str]) -> List[Dict[str, Any]]:
         """Parse a list of YAML option strings.
-        
+
         Args:
             options: List of YAML option strings
-            
+
         Returns:
             List of parsed option dictionaries
-            
+
         Raises:
             ValueError: If any option string is invalid
         """
@@ -164,18 +164,18 @@ class TaskfileToTasks:
 
     def _resolve_source_file(self, source_file: Optional[str]) -> Path:
         """Resolve the Taskfile.yml path.
-        
+
         Searches in this order:
         1. Provided source_file path
         2. Git repository root
         3. Current directory
-        
+
         Args:
             source_file: Optional explicit path to Taskfile.yml
-            
+
         Returns:
             Resolved Path to Taskfile.yml
-            
+
         Raises:
             FileNotFoundError: If Taskfile.yml cannot be found
         """
@@ -212,10 +212,10 @@ class TaskfileToTasks:
 
     def _resolve_output_dir(self, output_dir: Optional[str]) -> Path:
         """Resolve the output directory path.
-        
+
         Args:
             output_dir: Optional explicit output directory
-            
+
         Returns:
             Resolved Path to output directory (created if necessary)
         """
@@ -236,13 +236,13 @@ class TaskfileToTasks:
 
     def _load_taskfile(self) -> List[Dict[str, Any]]:
         """Load all tasks using 'task --list-all --json' or 'go-task --list-all --json'.
-        
+
         Runs the task command in the Taskfile's directory to get all tasks
         including those from included Taskfiles.
-        
+
         Returns:
             List of task dictionaries from task command output
-            
+
         Raises:
             RuntimeError: If task command fails
             ValueError: If output is not valid JSON
@@ -257,11 +257,14 @@ class TaskfileToTasks:
                 text=True,
                 check=True,
             )
-            
+
             tasks_data = json.loads(result.stdout)
+            if not isinstance(tasks_data, dict) or "tasks" not in tasks_data:
+                raise ValueError("Expected task output to be a dictionary with 'tasks' key")
+            tasks_data = tasks_data["tasks"]
             if not isinstance(tasks_data, list):
                 raise ValueError("Expected task output to be a list of tasks")
-            
+
             self._log(f"Loaded {len(tasks_data)} task(s) from task command")
             return tasks_data
         except subprocess.CalledProcessError as e:
@@ -273,13 +276,13 @@ class TaskfileToTasks:
 
     def _extract_tasks(self, tasks_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Extract tasks from task command output.
-        
+
         Args:
             tasks_data: List of task dictionaries from 'task --list-all --json'
-            
+
         Returns:
             List of extracted task dictionaries
-            
+
         Raises:
             ValueError: If tasks_data is not a list
         """
@@ -314,10 +317,10 @@ class TaskfileToTasks:
 
     def _generate_vscode_tasks(self, tasks: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Generate VSCode tasks.json format.
-        
+
         Args:
             tasks: List of extracted task dictionaries
-            
+
         Returns:
             Dictionary in VSCode tasks.json format
         """
@@ -355,10 +358,10 @@ class TaskfileToTasks:
 
     def _generate_zed_tasks(self, tasks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Generate Zed tasks.json format.
-        
+
         Args:
             tasks: List of extracted task dictionaries
-            
+
         Returns:
             List of task dictionaries in Zed format
         """
@@ -389,10 +392,10 @@ class TaskfileToTasks:
 
     def convert(self) -> Optional[Path]:
         """Convert Taskfile.yml to tasks.json and write to disk.
-        
+
         Returns:
             Path to the generated tasks.json file, or None if no tasks found
-            
+
         Raises:
             RuntimeError: If task command fails
             ValueError: If task output is invalid
@@ -426,7 +429,7 @@ class TaskfileToTasks:
 
     def get_tasks_summary(self) -> List[Dict[str, str]]:
         """Get a summary of extracted tasks without writing to disk.
-        
+
         Returns:
             List of dictionaries with 'id' and 'description' keys
         """
