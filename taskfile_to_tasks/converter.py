@@ -71,6 +71,7 @@ class TaskfileToTasks:
         editor: str = "zed",
         skip_tasks: Optional[List[str]] = None,
         skip_task_patterns: Optional[List[str]] = None,
+        task_cmd: Optional[str] = None,
         extra_zed_options: Optional[List[str]] = None,
         extra_vscode_options: Optional[List[str]] = None,
         verbose: bool = False,
@@ -83,6 +84,7 @@ class TaskfileToTasks:
             editor: Target editor - "vscode" or "zed"
             skip_tasks: List of task IDs to skip
             skip_task_patterns: List of regex patterns for task IDs to skip
+            task_cmd: Task command to use in generated tasks.json (defaults to auto-detected command)
             extra_zed_options: List of YAML option strings to merge with Zed tasks
             extra_vscode_options: List of YAML option strings to merge with VSCode presentation
             verbose: Enable verbose output
@@ -101,6 +103,8 @@ class TaskfileToTasks:
         self.source_file = self._resolve_source_file(source_file)
         self.output_dir = self._resolve_output_dir(output_dir)
         self.task_command = self._find_task_command()
+        # Use provided task_cmd for tasks.json, or fall back to detected task_command
+        self.tasks_cmd = task_cmd if task_cmd else self.task_command
 
         # Parse extra options
         self.extra_zed_options = self._parse_extra_options(extra_zed_options or [])
@@ -391,7 +395,7 @@ class TaskfileToTasks:
             vscode_task = {
                 "label": task["label"],
                 "type": "shell",
-                "command": self.task_command,
+                "command": self.tasks_cmd,
                 "args": [task["id"]],
                 "presentation": presentation,
                 "group": {"kind": "build", "isDefault": False},
@@ -431,7 +435,7 @@ class TaskfileToTasks:
             )
             zed_task = {
                 "label": task_label,
-                "command": self.task_command,
+                "command": self.tasks_cmd,
                 "args": [task["id"]],
             }
 

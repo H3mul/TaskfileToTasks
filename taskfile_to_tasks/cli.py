@@ -33,6 +33,9 @@ Examples:
   # Skip tasks matching regex patterns
   taskfile-to-tasks --skip-task-pattern '^test_' --skip-task-pattern '.*:setup$'
 
+  # Use custom task command in generated tasks.json
+  taskfile-to-tasks --task-cmd "go-task"
+
   # Add extra options
   taskfile-to-tasks \\
     --extra-zed-options "use_new_terminal: true" \\
@@ -89,6 +92,15 @@ Examples:
     )
 
     parser.add_argument(
+        "--task-cmd",
+        type=str,
+        default=None,
+        help="Task command to use in generated tasks.json (e.g., 'task', 'go-task'). "
+        "Useful when the running platform differs from the target platform. "
+        "Default: auto-detected from system",
+    )
+
+    parser.add_argument(
         "--extra-zed-options",
         type=str,
         action="append",
@@ -142,6 +154,7 @@ def main(argv: Optional[list] = None) -> int:
             editor=args.editor,
             skip_tasks=args.skip_tasks,
             skip_task_patterns=args.skip_task_pattern,
+            task_cmd=args.task_cmd,
             extra_zed_options=args.extra_zed_options,
             extra_vscode_options=args.extra_vscode_options,
             verbose=args.verbose,
